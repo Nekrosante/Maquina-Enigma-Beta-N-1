@@ -1,0 +1,225 @@
+import RPi.GPIO as GPIO #importamos la libreria RPi.GPIO para utilizar los pines 
+import time #Importamos la libreria time
+import sys
+
+GPIO.setmode(GPIO.BOARD) #ponemos la raspberry en modo board(pines fisicos)
+GPIO.setwarnings(False) #desactivamos los avisos
+
+GPIO.setup(37,GPIO.OUT) #configuramos el pin 3 como salida
+r1 = GPIO.PWM(37,50)     #ponemos el pin 3 en modo PWM y enviamos 50 pulsos por segundo necesarios para comenzar el PWM.
+
+GPIO.setup(35,GPIO.OUT) #configuramos el pin 3 como salida
+r2 = GPIO.PWM(35,50)     #ponemos el pin 3 en modo PWM y enviamos 50 pulsos por segundo necesarios para comenzar el PWM.
+
+
+Pines = [3, 5 , 7, 11, 13, 16, 19, 21, 23, 29, 31, 33, 12, 16, 18, 22, 24, 26, 32, 36, 38, 40, 3, 5, 7, 11 ]
+#letras  A  B   C   D   E  F   G   H    I   J   K   L   M   N   O  P   Q   R    S   T   U   V  W  X  Y   Z  
+
+# el vector pines tendra ls pines fisicos utilizdos  para los LEDs que usaran en cada letra  
+ 
+for i in Pines:
+    GPIO.setup(i, GPIO.OUT) # se configura cada poscion del vector pin como salida GPIO
+
+r1.start(0.1) #inicializar el servo de R1
+r2.start(0.1) #inicializar el servo de R1
+
+time.sleep(0.25) #esperamos 0.25 segundos para permitir girar adecuadamente a lso servos
+posicion = r1.ChangeDutyCycle((0.5*100)/20) #posiciones a 0 grados el servo R1
+posicion = r2.ChangeDutyCycle((0.5*100)/20) #posiciones a 0 grados el servo R2
+
+
+time.sleep(0.25) #esperamos 0.25 segundos para permitir girar adecuadamente a lso servos
+r1.ChangeDutyCycle(0) # detemos la señal PWM  de R1(colocando el ciclo de trabajo en 0) para evitar rodamientos innecesarios
+r2.ChangeDutyCycle(0) # detemos la señal PWM de R2 (colocando el ciclo de trabajo en 0) para evitar rodamientos innecesarios
+
+
+# contruimos los vectores Diccionarios para la entrada (Orin), el R1 (Alpha), y el servo R2 (Beta)
+Orin  = [ "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"]
+Alpha = [ "M", "O", "N", "P", "A", "T", "Z", "C", "R", "D", "Y", "U", "H", "W", "G", "I", "B", "V", "S", "Q", "E", "K", "X", "L", "F", "J"]
+Beta  = [ "T", "U", "S", "M", "D", "Q", "A", "B", "P", "V", "Z", "X", "N", "H", "E", "W", "F", "C", "G", "K", "O", "R", "I", "J", "L", "Y"]
+
+# Contruimos dos funicones para determianar la toracion de cada servo, RotarA para rotar Alpha una posiscion y RotarB para rotar 2 posicones Beta
+# esto permitira que cada ejecucion las letras cambien su traduccion, es decir su eqivalente en los rotores
+def RotarA(Alpha):
+    RotarAlpha = Alpha[25]+ Alpha[0] + Alpha[1] + Alpha[2]+ Alpha[3]+ Alpha[4]+ Alpha[5]+ Alpha[6]+ Alpha[7]+ Alpha[8]+ Alpha[9]+ Alpha[10]+  Alpha[11]+ Alpha[12]+ Alpha[13]+ Alpha[14]+ Alpha[15]+ Alpha[16]+ Alpha[17]+ Alpha[18]+ Alpha[19]+ Alpha[20]+ Alpha[21]+ Alpha[22]+ Alpha[23]+ Alpha[24]
+    return RotarAlpha
+
+def RotarB(Alpha):
+    RotarAlpha = Alpha[24] + Alpha[25]+ Alpha[0] + Alpha[1] + Alpha[2]+ Alpha[3]+ Alpha[4]+ Alpha[5]+ Alpha[6]+ Alpha[7]+ Alpha[8]+ Alpha[9]+ Alpha[10]+  Alpha[11]+ Alpha[12]+ Alpha[13]+ Alpha[14]+ Alpha[15]+ Alpha[16]+ Alpha[17]+ Alpha[18]+ Alpha[19]+ Alpha[20]+ Alpha[21]+ Alpha[22]+ Alpha[23]
+    return RotarAlpha
+
+# contruimos los vectores AngLR1 y AngLR2 contiene los angulos exactos donde se ubicacn las letras dentro del rotor R1 y R2 respectivamente
+# el valor de estos angulos estan determiandos por la construcicon del servomotro y por la forma que esta construida la lista de letras sobre el rotor
+AngLR1 = [0, 5, 15, 23, 29, 34, 35, 39, 44, 51, 57, 62, 69, 77, 82, 90, 96, 105, 111, 117, 126, 134, 139, 146, 153, 160]
+AngLR2 = [0, 9, 13, 16, 24, 30, 34, 36, 42, 50, 55, 58, 67, 73, 81, 85, 92, 100, 112, 115, 125, 129, 135, 140, 150, 160]
+# se puede notar que los servomotores solo pueden girar 160º lo que limita el uso de toda el area del rotor
+
+#definimos dos contadoras para llevar la cuanta de giros de cada rotor
+
+CONTR1 = 0
+CONTR2 = 0
+
+
+# utilizamos un Try, Excep para ejecutar el codigo 
+try:
+    while True: # permitimos un ciclo infinito para que se ejecute hasta pulsar en consola Ctrl + C
+        tecla = sys.stdin.read(1) # leemos la un solo valor de la entradad del teclado 
+        if tecla != "\n": # verificamos que solo lea letras sin el salto de linea respecitvo
+            LetraR1 = Alpha[Orin.index(tecla)] # se traduce la letra ingresada al su correspondiente equivalente en R1
+            print("letra salida R1: ", LetraR1)# imprimimos en consola la tradcuion del priemer diccionario de R1
+            j= Orin.index(LetraR1) # buscamos en el vector orin la psicion de la letra traducidad de R1
+            Ang = AngLR1[j] # buscamos el valor del angulo para el rotor R1
+            print(Ang)# imprimimos el valor del angulo en consola 
+            GPIO.output(Pines[j], GPIO.HIGH) # damos un alto al LED corresondiente de en la letra de R1
+            time.sleep(0.25)
+			#el siguiente codigo permite compensar los errores acumulados cada 45º en los servomotroes utilizados,
+			# convirtiendo los angulos en ciclos de trabajo para el PWM del rotor R1
+            grados = Ang
+            radianes=(3.1516/180)*grados #conversion de grados a radianes
+            grados = 180 - grados        
+            if  grados >= 0 and grados <= 45: #si grados es mayor o igual que 0 y menor o igual que 90 se ejecuta las instrucciones que estan dentro del if
+                Nms=grados*0.0096+0.5  #20 ms son 100 dutycicle
+                dc=(Nms*100)/20   
+                r1.ChangeDutyCycle(dc)
+                time.sleep(1)        #esperamos 1 segundo
+                r1.ChangeDutyCycle(0) #ponemos el DutyCycle a 0 para que el servo se mueva lo menos posible
+                if grados >= 0: #volvemos a mandar al servo al mismo lugar para asegurarnos
+                    r1.ChangeDutyCycle(dc)#
+                    time.sleep(0.9)
+                    r1.ChangeDutyCycle(0)
+                else:
+                    pass
+
+            elif grados > 45 and grados <= 90:
+            
+                Nms=grados*0.01+0.5
+                dc=(Nms*100)/20
+                r1.ChangeDutyCycle(dc)
+                time.sleep(1)
+                r1.ChangeDutyCycle(0)
+            
+                if grados >= 0:
+                    r1.ChangeDutyCycle(dc)
+                    time.sleep(0.5)
+                    r1.ChangeDutyCycle(0)
+                else:
+                    pass
+            
+            elif grados > 90 and grados <= 145:
+                Nms=grados*0.01021+0.5
+                dc=(Nms*100)/20
+                r1.ChangeDutyCycle(dc)
+                time.sleep(1)
+                r1.ChangeDutyCycle(0)
+            
+                if grados >= 0:
+                    r1.ChangeDutyCycle(dc)
+                    time.sleep(1)
+                    r1.ChangeDutyCycle(0)
+                else:
+                    pass
+                
+            elif grados > 145 and grados <=160:
+                Nms=grados*0.0108+0.5
+                dc=(Nms*100)/20
+                r1.ChangeDutyCycle(dc)
+                time.sleep(1)
+                r1.ChangeDutyCycle(0)
+            
+                if grados >= 0:
+                    r1.ChangeDutyCycle(dc)
+                    time.sleep(1)
+                    r1.ChangeDutyCycle(0)
+                else:
+                    pass
+            
+            CONTR1 = CONTR1 +1 # contabilizamos cada giro del rotor R1
+            Alpha = RotarA(Alpha) # rotamos el vector alpha cada ejecucion
+            
+            if CONTR1 == 26: # rotamos el vector beta cada 26 giros de Alpha
+                CONTR2 = CONTR2 +1
+				Beta = RotarB(Beta)
+            
+            GPIO.output(Pines[j], GPIO.LOW) #apagamos el led indicador de la letra del de R1
+            time.sleep(0.25) 
+            
+            
+            
+            LetraR2 = Beta[Alpha.index(LetraR1)] # traducimos la letra de R1 en su equivalente en el rotor R2
+            print("Letra de salida R2: ", LetraR2) #imprimimos en consola la tradcuion del priemer diccionario de R2
+            k = Orin.index(LetraR2) # buscamos en el vector orin la psicion de la letra traducidad de R2
+            Ang2 = AngLR2[k] # buscamos el valor del angulo para el rotor R2
+            print(Ang2)
+            
+            GPIO.output(Pines[k], GPIO.HIGH) # damos un alto al LED corresondiente de en la letra de R2
+            time.sleep(0.25)
+            # al igual que el rotor anteriror aplicamos el mismo codigo para corregir los errores acumulados cada 45º
+            grados = Ang2
+            radianes=(3.1516/180)*grados #conversion de grados a radianes
+            grados = 180 - grados        
+            if  grados >= 0 and grados <= 45: #si grados es mayor o igual que 0 y menor o igual que 90 se ejecuta las instrucciones que estan dentro del if
+                Nms=grados*0.0096+0.5  #20 ms son 100 dutycicle
+                dc=(Nms*100)/20   
+                r2.ChangeDutyCycle(dc)
+                time.sleep(1)        #esperamos 1 segundo
+                r2.ChangeDutyCycle(0) #ponemos el DutyCycle a 0 para que el servo se mueva lo menos posible
+                if grados >= 0: #volvemos a mandar al servo al mismo lugar para asegurarnos
+                    r2.ChangeDutyCycle(dc)
+                    time.sleep(0.9)
+                    r2.ChangeDutyCycle(0)
+                else:
+                    pass
+
+            elif grados > 45 and grados <= 90:
+            
+                Nms=grados*0.01+0.5
+                dc=(Nms*100)/20
+                r2.ChangeDutyCycle(dc)
+                time.sleep(1)
+                r2.ChangeDutyCycle(0)
+            
+                if grados >= 0:
+                    r2.ChangeDutyCycle(dc)
+                    time.sleep(0.5)
+                    r2.ChangeDutyCycle(0)
+                else:
+                    pass
+            
+            elif grados > 90 and grados <= 145:
+                Nms=grados*0.01021+0.5
+                dc=(Nms*100)/20
+                r2.ChangeDutyCycle(dc)
+                time.sleep(1)
+                r2.ChangeDutyCycle(0)
+            
+                if grados >= 0:
+                    r2.ChangeDutyCycle(dc)
+                    time.sleep(1)
+                    r2.ChangeDutyCycle(0)
+                else:
+                    pass
+                
+            elif grados > 145 and grados <=180:
+                Nms=grados*0.0108+0.5
+                dc=(Nms*100)/20
+                r2.ChangeDutyCycle(dc)
+                time.sleep(1)
+                r2.ChangeDutyCycle(0)
+            
+                if grados >= 0:
+                    r2.ChangeDutyCycle(dc)
+                    time.sleep(1)
+                    r2.ChangeDutyCycle(0)
+                else:
+                    pass
+                    
+            GPIO.output(Pines[k], GPIO.LOW) # apagamos el LED encendido por la letra de R2
+            time.sleep(0.25)
+            
+                
+        
+except KeyboardInterrupt: 
+    print("Final")# imprimimos en consola Final cada vez que el usuario se salga del programa al pulsar Ctrl + C
+    
+    
+
