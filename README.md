@@ -15,7 +15,7 @@ Jumpers
 
 Protoboard
 
-3 Resistencias (330 ohms/0.25W)
+3 Resistencias (330 Ω/0.25W)
 
 27 Leds
 
@@ -26,16 +26,17 @@ Alimentador de 12V
 
 https://www.youtube.com/watch?v=kkEfIszVuvA&feature=youtu.be
 
-# Descrpcion General
+# Descripción General
 
-A contiuacion se detalla el diseño y la consrucion de una mauqina engima de dos rotores por medio de un sistma enbebdio y servomotores, se detalla el metodo para obtener la adecuada calibracion de estos implemento y se postulan mejors futuras para su implemenacion
+A continuación se detalla el diseño y la construcción de una maquina enigma de dos rotores por medio de un sistema embebido y servomotores, se detalla el método para obtener la adecuada calibración de estos implementos y se postulan mejores futuras para su implementación.
 
-# Servmotores
-Para trabajar adecuadamente con servmomotres es necesario establcer el rango de operacion y cracteristicas mecanica de cada elemento, por tanto se sugiere previo a la construcion de lamauina se experiemnte con ellos para determianr cuanto puede girar cada uno y que tanto error acumulado tienen entre el rango de operacion, en el codigo descrito en este proyecto se estbalcen estrategias para reducir el comportaiemnto erratico de algunos servomotores,sin emabrgo el comprotacinto cambia egun el fabricante y caracteristivcas propias del elemnto por tanto se suguiere conpensar estos valores para un optimo rendimiento
+# Servomotores
+Para trabajar adecuadamente con servomotores es necesario establecer el rango de operación y las características mecánica de cada elemento, por tanto se sugiere previo a la construcción de la máquina, se experimente con ellos para determinar cuanto puede girar cada uno y que tanto error acumulado tienen entre el rango de operación, en el código descrito en este proyecto se establecen estrategias para reducir el comportamiento errático de algunos servomotores, sin embargo el comportamiento cambia según el fabricante y características propias del elemento por tanto se siguiere compensar y modificar estos valores para un óptimo rendimiento.
 
-# raspberry pi 
-EL codigo planteado esta elaborado en python 3, por tanto es recomendable que al usar la raspberry pi se actualize, para la ejecuacnion fue ncesario la correcta ubicacion de cada pin GPIO a utlizar.
+#Raspberry pi 
+El código planteado esta elaborado en Python 3, por tanto es recomendable que al usar la Raspberry pi se actualice, para la ejecución fue necesario la correcta ubicación de cada pin GPIO con la numeración de la board, es recomendable cambiarlos a un nomenclatura normal si esta acostumbrado a esta, 
 
 # Leds
+Para la visualización de la salida de la maquina se utilizaron 26 leds difusos conectados directamente al sistema embebido, para una siguiente entrega se recomienda un sistema matricial de led para obtener mejores resultados con menos pines usados.
 
 
